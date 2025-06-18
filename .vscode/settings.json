@@ -80,6 +80,7 @@
         "ios": "cpp",
         "locale": "cpp",
         "fstream": "cpp",
-        "csignal": "cpp"
+        "csignal": "cpp",
+        "__bit_reference": "cpp"
     }
 }

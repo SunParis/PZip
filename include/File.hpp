@@ -2,7 +2,6 @@
 
 # ifndef _File_HPP_
 # define _File_HPP_ 1
-# define _FILE_OFFSET_BITS 64
 
 # include <iostream>
 # include <filesystem>
@@ -33,13 +32,13 @@ private:
 
 public:
 
-    File(const std::string &file_name, Mode mode)
+    File(const std::string_view &file_name, Mode mode)
     :   file_name_(file_name), mode_(mode)
     {
         std::ios_base::openmode mode__ = (mode == Mode::Read) ? std::ios::in : std::ios::out | std::ios::trunc;
-        this->curr_file_.open(file_name, mode__);
+        this->curr_file_.open(file_name.data(), mode__);
         if (!this->curr_file_.is_open()) {
-            throw std::runtime_error("Failed to open file: " + file_name);
+            throw std::runtime_error("Failed to open file: " + this->file_name_);
         }
         this->file_size_ = std::filesystem::file_size(file_name);
     }

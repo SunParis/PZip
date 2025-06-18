@@ -1,5 +1,5 @@
 
-# include "File.hpp"
+# include "Huffman.hpp"
 
 void write_sth() {
     std::ofstream out("output.dat");
@@ -23,18 +23,13 @@ int main(int argc, char *argv[]) {
     // }
     try {
         // write_sth();
-        File file("output.dat", File::Mode::Read);
-        std::cout << "File opened successfully: " << file.get_file_name() << std::endl;
-        std::cout << "File size: " << file.file_size() << " bytes" << std::endl;
-
-        char buffer[1024];
-        Result<std::streamsize> result = file.read(buffer, sizeof(buffer));
+        // File file("output.dat", File::Mode::Read);
+        // std::cout << "File opened successfully: " << file.get_file_name() << std::endl;
+        // std::cout << "File size: " << file.file_size() << " bytes" << std::endl;
+        Huffman huffman("output.dat", 4);
+        huffman.count_frequencies();
+        huffman.print();
         
-        if (result.is_success()) {
-            std::cout << "Read " << result.get_value() << " bytes from the file." << std::endl;
-        } else {
-            std::cerr << "Error reading file: " << result.get_error() << std::endl;
-        }
     } catch (const std::exception &e) {
         std::cerr << "Exception: " << e.what() << std::endl;
         return 1;
