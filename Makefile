@@ -1,4 +1,4 @@
-.PHONY: all build_dir configure build clean push
+.PHONY: all build_dir configure build run clean push
 
 all: build_dir configure build
 
@@ -12,6 +12,9 @@ configure: build_dir
 
 build: configure
 	@cd build && make -j4
+
+run: build
+	@cd build && ./PZip
 
 clean:
 	@if [ -d "build" ]; then \
