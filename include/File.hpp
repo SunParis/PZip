@@ -35,7 +35,7 @@ public:
     File(const std::string_view &file_name, Mode mode)
     :   file_name_(file_name), mode_(mode)
     {
-        std::ios_base::openmode mode__ = (mode == Mode::Read) ? std::ios::in : std::ios::out | std::ios::trunc;
+        std::ios_base::openmode mode__ = std::ios::in | std::ios::binary; //(mode == Mode::Read) ? std::ios::in | std::ios::trunc : std::ios::out | std::ios::trunc;
         this->curr_file_.open(file_name.data(), mode__);
         if (!this->curr_file_.is_open()) {
             throw std::runtime_error("Failed to open file: " + this->file_name_);
@@ -60,24 +60,32 @@ public:
             return Result<std::streamsize>::error("File not opened in read mode");
         }
         
-        if (offset >= 0) {
+        if (offset > 0) {
             this->curr_file_.seekg(offset, std::ios::beg);
-            if (this->curr_file_.fail()) {
-                return Result<std::streamsize>::error("Failed to seek in file");
+            if (this->curr_file_.tellg() != offset) {
+                return Result<std::streamsize>::error("Failed to seek in file:: " + std::to_string(offset) + "+" + std::to_string(size));
             }
         }
-        
-        std::streamsize bytes_read = this->curr_file_.readsome(static_cast<char *>(buffer), size);
-        if (bytes_read < size || bytes_read < 0) {
-            return Result<std::streamsize>::error("Error reading from file");
-        }
-        return bytes_read;
+        // char buffer_[8192];
+        // std::streamsize bytes_read = 
+        this->curr_file_.read(static_cast<char *>(buffer), 100);
+        // if (bytes_read < size || bytes_read < 0) {
+        //     return Result<std::streamsize>::error("Error reading from file:: " + std::to_string(bytes_read) + " bytes read, expected " + std::to_string(size));
+        // }
+        std::cout << "Read " << ((std::uint64_t *)buffer)[0] << std::endl;
+        return 8192;// bytes_read;
     }
 
     void close() {
         if (this->curr_file_.is_open()) {
             this->curr_file_.close();
         }
+    }
+
+    void print() const {
+        std::cout << "File Name: " << this->file_name_ << "\n"
+                  << "File Size: " << this->file_size_ << " bytes\n"
+                  << "Mode: " << (this->mode_ == Mode::Read ? "Read" : "Write") << std::endl;
     }
 
 };

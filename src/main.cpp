@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
         // File file("output.dat", File::Mode::Read);
         // std::cout << "File opened successfully: " << file.get_file_name() << std::endl;
         // std::cout << "File size: " << file.file_size() << " bytes" << std::endl;
-        Huffman huffman("output.dat", 4);
+        Huffman huffman("output.dat", 1);
         huffman.count_frequencies();
         huffman.print();
         

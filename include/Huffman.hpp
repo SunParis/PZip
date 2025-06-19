@@ -29,17 +29,19 @@ private:
     std::vector<char> remain;
 
     void count_sub_thread(File& file, std::size_t start, std::unordered_map<std::uint64_t, std::size_t> ret) {
-        std::vector<std::uint64_t> buffer(this->chunk_size_);
+        std::uint64_t buffer[this->chunk_size_];
+        std::cout << "::: " << this->file_size_ << std::endl;
         for (std::uintmax_t i = 0; i < this->file_size_;) {
-            Result<std::streamsize> result = file.read(buffer.data(), buffer.size(), start + i);
+            Result<std::streamsize> result = file.read(buffer, this->chunk_size_, start + i);
             if (!result.is_success()) {
                 throw std::runtime_error("Error reading file: " + result.get_error());
             }
-            std::streamsize bytes_read = result.get_value();
-            for (std::size_t j = 0; j < buffer.size(); j += 1) {
+            
+            for (std::size_t j = 0; j < this->chunk_size_; j += 1) {
                 ret[buffer[j]] += 1;
             }
             i += (this->thread_num_ * this->chunk_size_);
+            std::cout << "::: " << buffer[0] << std::endl;
         }
     }
 
@@ -126,7 +128,12 @@ public:
         if (thread_num_ < 1) {
             throw std::invalid_argument("Number of threads must be at least 1.");
         }
-    }    
+    }
+
+    ~Huffman() {
+        this->frequencies.clear();
+        this->remain.clear();
+    }
     
     void count_frequencies() {
         File file(file_name_, File::Mode::Read);
@@ -137,16 +144,16 @@ public:
         }
         
         std::vector<std::pair<std::thread *, std::unordered_map<std::uint64_t, std::size_t>>> threads;
-        threads.reserve(thread_num_);
-
-        for (std::size_t i = 0; i < thread_num_; ++i) {
+        threads.reserve(this->thread_num_);
+        file.print();
+        for (std::size_t i = 0; i < this->thread_num_; ++i) {
             std::size_t start = i * chunk_size_;
             threads[i].first = new std::thread(&Huffman::count_sub_thread, this,
                 std::ref(file), start, std::ref(threads[i].second));
         }
 
         if (this->file_size_ % this->chunk_size_ > 0) {
-            this->remain.resize(this->file_size_ % this->chunk_size_);
+            this->remain.reserve(this->file_size_ % this->chunk_size_);
             Result<std::streamsize> result = file.read(remain.data(), remain.size(), this->file_size_ - remain.size());
             if (!result.is_success()) {
                 throw std::runtime_error("Error reading file: " + result.get_error());
@@ -163,6 +170,8 @@ public:
         }
 
         this->assignCodesChar(this->frequencies);
+
+        file.close();
     }
 
     const std::vector<char>& get_code(std::uint64_t key) const {
